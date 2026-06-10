@@ -1,0 +1,11 @@
+# Tooling / local
+.claude/
+.vercel/
+.DS_Store
+
+# Arquivos-fonte (não fazem parte do site publicado)
+Logo Teles.jpg
+logo-teles-light.png
+
+# HTML duplicado (o site servido é o index.html)
+teles-plaza-hotel.html
