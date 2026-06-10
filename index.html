@@ -299,17 +299,6 @@
   .hamburger { display: none; }
 
   /* ==========================================================================
-     ROTEAMENTO SPA — páginas
-     ========================================================================== */
-  .page { display: none; }
-  .page.active { display: block; animation: pageFade 420ms cubic-bezier(0.16,1,0.3,1); }
-  @keyframes pageFade {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .page-inner-top { padding-top: calc(76px + var(--space-16)); }
-
-  /* ==========================================================================
      HERO
      ========================================================================== */
   .hero {
@@ -365,50 +354,6 @@
   }
 
   /* ==========================================================================
-     POR QUE NOS ESCOLHER — grid assimétrico 2+2
-     ========================================================================== */
-  .why-grid {
-    display: grid; gap: var(--space-6);
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .why-card {
-    display: flex; gap: var(--space-5); align-items: flex-start;
-    background: var(--color-surface); border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg); padding: var(--space-8);
-    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
-  }
-  .why-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border)); }
-  .why-card:hover .icon-wrap { color: #fff; background: var(--color-primary); border-color: var(--color-primary); transform: rotate(-4deg) scale(1.05); }
-  /* assimetria: 1º card em destaque, fundo azul claro + barra dourada */
-  .why-card:nth-child(1) {
-    grid-column: span 2; background: var(--color-primary-light);
-    border-color: transparent; border-left: 3px solid var(--color-accent-bright);
-  }
-  .why-card .icon-wrap {
-    flex-shrink: 0; width: 56px; height: 56px; border-radius: var(--radius-md);
-    display: grid; place-items: center; background: var(--color-bg);
-    color: var(--color-accent); border: 1px solid var(--color-border);
-    transition: all var(--transition);
-  }
-  .why-card h3 { font-size: var(--text-lg); margin-bottom: var(--space-2); color: var(--color-text); }
-  .why-card p { color: var(--color-text-muted); font-size: var(--text-sm); }
-
-  /* ---------- Faixa de estatísticas ---------- */
-  .stats-band {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-6);
-    margin-top: var(--space-12); padding: var(--space-10);
-    background: var(--color-primary); border-radius: var(--radius-xl);
-    position: relative; overflow: hidden;
-  }
-  .stats-band::after {
-    content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle at 80% 0%, rgba(240,180,24,0.18), transparent 55%);
-  }
-  .stat { text-align: center; position: relative; }
-  .stat .num { font-family: var(--font-display); font-weight: 700; font-size: var(--text-2xl); color: var(--color-accent-bright); line-height: 1; }
-  .stat .label { font-size: var(--text-sm); color: rgba(255,255,255,0.82); margin-top: var(--space-2); }
-
-  /* ==========================================================================
      ACOMODAÇÕES — cards
      ========================================================================== */
   .featured-grid {
@@ -448,69 +393,6 @@
   .room-card .card-foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
 
   /* ==========================================================================
-     DEPOIMENTOS
-     ========================================================================== */
-  .testimonials-track {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-6);
-  }
-  .testimonial {
-    background: var(--color-surface); border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg); padding: var(--space-8);
-    display: flex; flex-direction: column; gap: var(--space-4);
-    border-top: 3px solid var(--color-primary);
-  }
-  .testimonial .quote { font-style: italic; color: var(--color-text); font-size: var(--text-base); position: relative; }
-  .testimonial .quote::before {
-    content: '\201C'; font-family: var(--font-display); font-size: 3rem; color: var(--color-accent);
-    line-height: 0; position: absolute; top: 8px; left: -6px; opacity: 0.3;
-  }
-  .testimonial .stars { color: var(--color-accent-bright); letter-spacing: 2px; font-size: var(--text-sm); }
-  .testimonial .author { display: flex; align-items: center; gap: var(--space-3); margin-top: auto; }
-  .testimonial .author img { width: 48px; height: 48px; border-radius: var(--radius-full); object-fit: cover; border: 2px solid var(--color-accent-soft); }
-  .testimonial .author b { font-family: var(--font-body); font-weight: 600; font-size: var(--text-sm); display: block; color: var(--color-text); }
-  .testimonial .author span { font-size: var(--text-xs); color: var(--color-text-muted); }
-
-  /* ==========================================================================
-     FAQ (perguntas frequentes — SEO / featured snippets)
-     ========================================================================== */
-  .faq-list { max-width: 820px; margin-inline: auto; display: flex; flex-direction: column; gap: var(--space-3); }
-  .faq-item {
-    background: var(--color-surface); border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg); overflow: hidden; transition: border-color var(--transition), box-shadow var(--transition);
-  }
-  .faq-item[open] { border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border)); box-shadow: var(--shadow-sm); }
-  .faq-item summary {
-    list-style: none; cursor: pointer; padding: var(--space-5) var(--space-6);
-    display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
-    font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; color: var(--color-text);
-  }
-  .faq-item summary::-webkit-details-marker { display: none; }
-  .faq-item summary::after {
-    content: ''; flex-shrink: 0; width: 11px; height: 11px;
-    border-right: 2px solid var(--color-primary); border-bottom: 2px solid var(--color-primary);
-    transform: rotate(45deg); transition: transform var(--transition); margin-right: 4px;
-  }
-  .faq-item[open] summary::after { transform: rotate(-135deg); }
-  .faq-item .faq-body { padding: 0 var(--space-6) var(--space-6); color: var(--color-text-muted); font-size: var(--text-base); }
-
-  /* ==========================================================================
-     CTA FINAL
-     ========================================================================== */
-  .cta-final {
-    background: linear-gradient(135deg, #1e3a78 0%, #14264f 100%);
-    color: #fff; text-align: center; border-radius: var(--radius-xl);
-    padding: var(--space-20) var(--space-8);
-    position: relative; overflow: hidden;
-  }
-  .cta-final::before {
-    content: ''; position: absolute; inset: 0;
-    background: radial-gradient(circle at 50% 0%, rgba(240,180,24,0.28), transparent 60%);
-  }
-  .cta-final > * { position: relative; }
-  .cta-final h2 { font-size: var(--text-2xl); margin-bottom: var(--space-4); color: #fff; }
-  .cta-final p { color: rgba(255,255,255,0.82); max-width: 50ch; margin: 0 auto var(--space-8); }
-
-  /* ==========================================================================
      ACOMODAÇÕES (página)
      ========================================================================== */
   .filter-bar { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-12); }
@@ -528,24 +410,6 @@
   .amenities { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2) var(--space-4); margin: var(--space-2) 0; }
   .amenities li { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--color-text-muted); }
   .amenities li svg { flex-shrink: 0; color: var(--color-accent); }
-
-  /* ==========================================================================
-     ESTRUTURA — editorial alternado
-     ========================================================================== */
-  .feature-row {
-    display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-12);
-    align-items: center; margin-bottom: var(--space-20);
-  }
-  .feature-row:last-child { margin-bottom: 0; }
-  .feature-row:nth-child(even) .feature-media { order: 2; }
-  .feature-media { border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-md); }
-  .feature-media img { width: 100%; aspect-ratio: 4/3; object-fit: cover; }
-  .feature-text .num-tag {
-    font-family: var(--font-display); font-size: var(--text-xl); color: var(--color-accent);
-    opacity: 0.5; font-weight: 700; display: block; margin-bottom: var(--space-2);
-  }
-  .feature-text h3 { font-size: var(--text-xl); margin-bottom: var(--space-4); color: var(--color-text); }
-  .feature-text p { color: var(--color-text-muted); }
 
   /* ==========================================================================
      LOCALIZAÇÃO & CONTATO
@@ -612,32 +476,6 @@
   .footer-col a:hover { color: var(--color-accent-text); }
   .footer-bottom { border-top: 1px solid var(--color-border); padding-top: var(--space-6); text-align: center; }
   .footer-bottom p { font-size: var(--text-xs); }
-
-  /* ==========================================================================
-     MENU MOBILE
-     ========================================================================== */
-  .mobile-overlay {
-    position: fixed; inset: 0; z-index: 1500; background: rgba(8,14,32,0.55);
-    opacity: 0; visibility: hidden; transition: opacity var(--transition), visibility var(--transition);
-  }
-  .mobile-overlay.open { opacity: 1; visibility: visible; }
-  .mobile-panel {
-    position: fixed; top: 0; right: 0; bottom: 0; z-index: 1600;
-    width: min(320px, 84vw); background: var(--color-bg);
-    box-shadow: var(--shadow-lg); padding: var(--space-8) var(--space-6);
-    transform: translateX(100%); transition: transform var(--transition);
-    display: flex; flex-direction: column; gap: var(--space-2);
-    border-left: 4px solid var(--color-accent-bright);
-  }
-  .mobile-panel.open { transform: translateX(0); }
-  .mobile-panel .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-8); }
-  .mobile-panel nav { display: flex; flex-direction: column; }
-  .mobile-panel nav a {
-    padding: var(--space-4) var(--space-2); font-size: var(--text-lg); font-family: var(--font-display);
-    border-bottom: 1px solid var(--color-border); transition: color var(--transition); color: var(--color-text);
-  }
-  .mobile-panel nav a:hover, .mobile-panel nav a.active { color: var(--color-primary); }
-  .mobile-panel .btn { margin-top: var(--space-8); }
 
   /* ==========================================================================
      BOTÕES FLUTUANTES — WhatsApp + voltar ao topo (empilhados no canto)
