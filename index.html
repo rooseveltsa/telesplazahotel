@@ -320,9 +320,18 @@
   .hero-bg::after {
     content: ''; position: absolute; inset: 0; z-index: 2;
     background:
-      linear-gradient(180deg, rgba(8,14,32,0.55) 0%, rgba(8,14,32,0.12) 20%, transparent 42%, transparent 76%, rgba(8,14,32,0.34) 100%);
+      linear-gradient(180deg, rgba(8,14,32,0.55) 0%, rgba(8,14,32,0.10) 16%, transparent 38%, rgba(8,14,32,0.30) 66%, rgba(8,14,32,0.80) 100%),
+      linear-gradient(90deg, rgba(8,14,32,0.55) 0%, rgba(8,14,32,0.15) 45%, transparent 70%);
   }
-  .hero-content { position: relative; z-index: 1; width: min(800px, 100% - var(--space-8)); padding-top: 80px; }
+  .hero-content { position: absolute; inset: 0; z-index: 3; display: flex; align-items: flex-end; pointer-events: none; }
+  .hero-content > .container { padding-bottom: var(--space-20); }
+  .hero-captions { display: grid; }
+  .hero-caption { grid-area: 1 / 1; max-width: 38ch; text-align: left; opacity: 0; transform: translateY(16px); transition: opacity 700ms ease, transform 700ms ease; pointer-events: none; }
+  .hero-caption.is-active { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .hero-eyebrow { display: inline-block; font-weight: 600; font-size: var(--text-xs); letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-accent-bright); margin-bottom: var(--space-3); }
+  .hero-headline { font-family: var(--font-display); font-weight: 700; color: #fff; font-size: clamp(2rem, 1.2rem + 3.4vw, 4rem); line-height: 1.08; letter-spacing: -0.02em; text-shadow: 0 2px 24px rgba(0,0,0,0.5); margin-bottom: var(--space-4); }
+  .hero-sub { color: rgba(255,255,255,0.92); font-size: var(--text-lg); max-width: 44ch; text-shadow: 0 1px 12px rgba(0,0,0,0.55); margin-bottom: var(--space-6); }
+  @media (max-width: 768px) { .hero-content > .container { padding-bottom: var(--space-16); } .hero-caption { max-width: 92%; } }
   .hero-tag {
     display: inline-flex; align-items: center; gap: var(--space-2);
     background: rgba(240,180,24,0.16); border: 1px solid rgba(240,180,24,0.45);
@@ -640,14 +649,27 @@
       </div>
       <div class="hero-content">
         <h1 class="visually-hidden">Teles Plaza Hotel — Hotel em Águas Lindas de Goiás, perto de Brasília</h1>
+        <div class="container">
+          <div class="hero-captions">
+            <article class="hero-caption is-active">
+              <p class="hero-eyebrow">Hospedagem &amp; Acomodações</p>
+              <h2 class="hero-headline">Seu descanso começa aqui</h2>
+              <p class="hero-sub">Quartos confortáveis e o acolhimento de quem cuida de você como família, no coração de Águas Lindas de Goiás.</p>
+              <a class="btn btn-white btn-lg" href="#acomodacoes">Ver acomodações</a>
+            </article>
+            <article class="hero-caption">
+              <p class="hero-eyebrow">Traslado &amp; Van Executiva</p>
+              <h2 class="hero-headline">Chegue sem preocupação. Viaje com conforto.</h2>
+              <p class="hero-sub">Traslado do aeroporto e locação de van executiva — pontualidade, segurança e conforto para o seu grupo.</p>
+              <a class="btn btn-whatsapp btn-lg" href="https://wa.me/5561999343604?text=Ol%C3%A1!%20Quero%20um%20or%C3%A7amento%20de%20van%20executiva%20%2F%20traslado." target="_blank" rel="noopener">Solicitar a van</a>
+            </article>
+          </div>
+        </div>
       </div>
       <div class="hero-dots" id="heroDots" aria-label="Imagens do hotel">
         <button class="hero-dot is-active" type="button" aria-label="Foto 1"></button>
         <button class="hero-dot" type="button" aria-label="Foto 2"></button>
       </div>
-      <a href="#transporte" class="scroll-indicator" aria-label="Rolar para baixo">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
-      </a>
     </section>
 
     <!-- ================== TRANSPORTE (destaque, clicável) ================== -->
@@ -901,17 +923,17 @@
     /* ---------- Hero: carrossel ---------- */
     var heroSlides = document.querySelectorAll('.hero-slide');
     var heroDots = document.querySelectorAll('.hero-dot');
+    var heroCaptions = document.querySelectorAll('.hero-caption');
     if (heroSlides.length > 1) {
       var hi = 0, htimer = null;
       var heroReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      function heroSet(el, on) { if (el) el.classList[on ? 'add' : 'remove']('is-active'); }
       function heroGo(n) {
-        heroSlides[hi].classList.remove('is-active');
-        if (heroDots[hi]) heroDots[hi].classList.remove('is-active');
+        heroSet(heroSlides[hi], false); heroSet(heroDots[hi], false); heroSet(heroCaptions[hi], false);
         hi = (n + heroSlides.length) % heroSlides.length;
-        heroSlides[hi].classList.add('is-active');
-        if (heroDots[hi]) heroDots[hi].classList.add('is-active');
+        heroSet(heroSlides[hi], true); heroSet(heroDots[hi], true); heroSet(heroCaptions[hi], true);
       }
-      function heroStart() { if (!heroReduce) { clearInterval(htimer); htimer = setInterval(function () { heroGo(hi + 1); }, 5000); } }
+      function heroStart() { if (!heroReduce) { clearInterval(htimer); htimer = setInterval(function () { heroGo(hi + 1); }, 6000); } }
       heroDots.forEach(function (d, i) { d.addEventListener('click', function () { heroGo(i); heroStart(); }); });
       heroStart();
     }
