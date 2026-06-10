@@ -544,7 +544,10 @@
   .section-transporte .eyebrow::before { background: var(--color-accent-bright); }
   .section-transporte .section-title { color: #fff; }
 
-  .transport-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); max-width: 860px; margin-inline: auto; }
+  .transport-layout { display: grid; grid-template-columns: 1.05fr 1fr; gap: var(--space-8); align-items: center; max-width: 1000px; margin-inline: auto; }
+  .transport-photo { border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-lg); border: 1px solid rgba(255,255,255,0.18); }
+  .transport-photo img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 4 / 3; display: block; }
+  .transport-options { display: flex; flex-direction: column; gap: var(--space-4); }
   .transport-card {
     display: flex; align-items: center; gap: var(--space-4);
     background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16);
@@ -556,7 +559,7 @@
   .transport-name { flex: 1; font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; line-height: 1.2; }
   .transport-go { color: var(--color-accent-bright); display: inline-flex; transition: transform var(--transition); }
   .transport-card:hover .transport-go { transform: translateX(4px); }
-  @media (max-width: 768px) { .transport-grid { grid-template-columns: 1fr; gap: var(--space-4); } }
+  @media (max-width: 768px) { .transport-layout { grid-template-columns: 1fr; gap: var(--space-6); } }
 
   .footer-map { border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--color-border); box-shadow: var(--shadow-sm); margin-bottom: var(--space-10); }
   .footer-map iframe { display: block; width: 100%; height: 320px; border: 0; }
@@ -652,7 +655,9 @@
           <h2 class="section-title center-block" style="margin-inline:auto;max-width:22ch;">Traslado e van executiva</h2>
         </div>
 
-        <div class="transport-grid reveal">
+        <div class="transport-layout reveal">
+          <div class="transport-photo"><img src="van-executiva.jpg" alt="Van executiva do Teles Plaza Hotel — traslado e locação em Águas Lindas de Goiás e Brasília" width="1100" height="825" loading="lazy"></div>
+          <div class="transport-options">
           <a class="transport-card" href="https://wa.me/5561999343604?text=Ol%C3%A1!%20Quero%20informa%C3%A7%C3%B5es%20sobre%20o%20traslado%20aeroporto%20%E2%86%94%20hotel." target="_blank" rel="noopener">
             <span class="transport-icon">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 16l-1 4-2 1v-1l1-2-3 .5L4 20l-.5-1.5L6 17l-3-1.5L2 16l-.5-1L4 13 2 7l1.5.5L6 12l4-1 1-7 1.5.3.5 6.2 5-1.4c.9-.2 1.8.3 2 1.2.2.9-.3 1.8-1.2 2L10 16z"/></svg>
@@ -668,6 +673,7 @@
             <span class="transport-name">Locação de Van Executiva</span>
             <span class="transport-go"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
           </a>
+          </div>
         </div>
       </div>
     </section>

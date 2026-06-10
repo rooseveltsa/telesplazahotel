@@ -13,3 +13,7 @@ teles-plaza-hotel.html
 
 # Fotos-fonte originais (a versão usada é a hero-fachada.jpg otimizada)
 PHOTO-*.jpg
+
+# Pasta de fotos-fonte (versões otimizadas vão pro deploy)
+fotos/
+van.jpg
