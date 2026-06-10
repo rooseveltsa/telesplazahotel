@@ -307,17 +307,15 @@
     color: #fff; overflow: hidden; background: #0b1220;
   }
   .hero-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
-  /* Fundo borrado preenche as laterais; imagem nítida mostra o prédio inteiro */
-  .hero-bg::before {
-    content: ''; position: absolute; inset: -6%;
-    background: url('hero-fachada.jpg') center/cover no-repeat;
-    filter: blur(26px) brightness(0.5) saturate(1.1); transform: scale(1.12); z-index: 0;
-  }
-  .hero-bg img {
-    position: relative; z-index: 1;
-    width: 100%; height: 100%; object-fit: contain; object-position: center;
-    transform: translate3d(0,0,0); will-change: transform;
-  }
+  .hero-slide { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; transition: opacity 1200ms ease; z-index: 0; }
+  .hero-slide.is-active { opacity: 1; z-index: 1; animation: heroKen 7s ease-out forwards; }
+  @keyframes heroKen { from { transform: scale(1.005); } to { transform: scale(1.08); } }
+  .hero-dots { position: absolute; left: 50%; bottom: var(--space-12); transform: translateX(-50%); z-index: 3; display: flex; gap: var(--space-1); }
+  .hero-dot { width: 40px; height: 40px; display: grid; place-items: center; background: none; border: none; padding: 0; cursor: pointer; }
+  .hero-dot::before { content: ''; width: 10px; height: 10px; border-radius: 999px; background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.75); transition: all var(--transition); }
+  .hero-dot:hover::before { background: rgba(255,255,255,0.9); }
+  .hero-dot.is-active::before { width: 26px; background: var(--color-accent-bright); border-color: var(--color-accent-bright); }
+  @media (prefers-reduced-motion: reduce) { .hero-slide.is-active { animation: none; } .hero-slide { transition: none; } }
   /* scrim navy em camadas — legibilidade + profundidade premium */
   .hero-bg::after {
     content: ''; position: absolute; inset: 0; z-index: 2;
@@ -636,11 +634,16 @@
 
     <!-- ================== HERO ================== -->
     <section class="hero">
-      <div class="hero-bg">
-        <img src="hero-fachada.jpg" alt="Fachada do Teles Plaza Hotel — hotel em Águas Lindas de Goiás, em frente à BR-070 e perto de Brasília" width="1254" height="1254" fetchpriority="high">
+      <div class="hero-bg" id="heroCarousel">
+        <img class="hero-slide is-active" src="hero-1.jpg" alt="Fachada do Teles Plaza Hotel em Águas Lindas de Goiás, perto de Brasília" width="1920" height="1080" fetchpriority="high">
+        <img class="hero-slide" src="hero-2.jpg" alt="Van executiva do Teles Plaza Hotel para traslado e locação" width="1920" height="1080" loading="lazy">
       </div>
       <div class="hero-content">
         <h1 class="visually-hidden">Teles Plaza Hotel — Hotel em Águas Lindas de Goiás, perto de Brasília</h1>
+      </div>
+      <div class="hero-dots" id="heroDots" aria-label="Imagens do hotel">
+        <button class="hero-dot is-active" type="button" aria-label="Foto 1"></button>
+        <button class="hero-dot" type="button" aria-label="Foto 2"></button>
       </div>
       <a href="#transporte" class="scroll-indicator" aria-label="Rolar para baixo">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
@@ -689,7 +692,7 @@
 
         <div class="rooms-grid">
           <article class="room-card reveal">
-            <div class="media"><img src="https://picsum.photos/seed/quarto-casal/800/560" alt="Quarto Casal do Teles Plaza Hotel" loading="lazy" width="800" height="560"></div>
+            <div class="media"><img src="quarto-casal.jpg" alt="Quarto Casal do Teles Plaza Hotel" loading="lazy" width="900" height="675"></div>
             <div class="body">
               <span class="badge">Casal</span>
               <h3>Quarto Casal</h3>
@@ -699,7 +702,7 @@
           </article>
 
           <article class="room-card reveal">
-            <div class="media"><img src="https://picsum.photos/seed/quarto-solteiro/800/560" alt="Quarto Solteiro do Teles Plaza Hotel" loading="lazy" width="800" height="560"></div>
+            <div class="media"><img src="quarto-solteiro.jpg" alt="Quarto Solteiro do Teles Plaza Hotel" loading="lazy" width="900" height="675"></div>
             <div class="body">
               <span class="badge">Solteiro</span>
               <h3>Quarto Solteiro</h3>
@@ -709,7 +712,7 @@
           </article>
 
           <article class="room-card reveal">
-            <div class="media"><img src="https://picsum.photos/seed/quarto-duplo/800/560" alt="Quarto Duplo do Teles Plaza Hotel" loading="lazy" width="800" height="560"></div>
+            <div class="media"><img src="quarto-duplo.jpg" alt="Quarto Duplo do Teles Plaza Hotel" loading="lazy" width="900" height="675"></div>
             <div class="body">
               <span class="badge">Duplo</span>
               <h3>Quarto Duplo</h3>
@@ -895,19 +898,22 @@
       toTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
     }
 
-    /* ---------- Parallax do hero (respeita reduced-motion) ---------- */
-    var heroImg = document.querySelector('.hero-bg img');
-    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (heroImg && !reduceMotion) {
-      var ticking = false;
-      function updateParallax() {
-        var y = window.scrollY;
-        if (y < window.innerHeight) { heroImg.style.transform = 'translate3d(0,' + (y * 0.22) + 'px,0)'; }
-        ticking = false;
+    /* ---------- Hero: carrossel ---------- */
+    var heroSlides = document.querySelectorAll('.hero-slide');
+    var heroDots = document.querySelectorAll('.hero-dot');
+    if (heroSlides.length > 1) {
+      var hi = 0, htimer = null;
+      var heroReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      function heroGo(n) {
+        heroSlides[hi].classList.remove('is-active');
+        if (heroDots[hi]) heroDots[hi].classList.remove('is-active');
+        hi = (n + heroSlides.length) % heroSlides.length;
+        heroSlides[hi].classList.add('is-active');
+        if (heroDots[hi]) heroDots[hi].classList.add('is-active');
       }
-      window.addEventListener('scroll', function () {
-        if (!ticking) { window.requestAnimationFrame(updateParallax); ticking = true; }
-      }, { passive: true });
+      function heroStart() { if (!heroReduce) { clearInterval(htimer); htimer = setInterval(function () { heroGo(hi + 1); }, 5000); } }
+      heroDots.forEach(function (d, i) { d.addEventListener('click', function () { heroGo(i); heroStart(); }); });
+      heroStart();
     }
   })();
   </script>
