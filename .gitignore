@@ -10,3 +10,6 @@ logo-teles-light.png
 # HTML duplicado (o site servido é o index.html)
 teles-plaza-hotel.html
 .vercel
+
+# Fotos-fonte originais (a versão usada é a hero-fachada.jpg otimizada)
+PHOTO-*.jpg

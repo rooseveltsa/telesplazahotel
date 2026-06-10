@@ -242,11 +242,12 @@
     transition: background var(--transition), box-shadow var(--transition), padding var(--transition);
   }
   .site-header .container { display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); }
+  /* Header limpo: vidro translúcido suave, sem borda dura */
   .site-header.scrolled {
-    background: color-mix(in srgb, var(--color-bg) 92%, transparent);
-    backdrop-filter: blur(12px);
-    box-shadow: var(--shadow-sm);
-    border-bottom: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-bg) 78%, transparent);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--color-border) 60%, transparent), var(--shadow-sm);
   }
   /* No topo do hero, header transparente com texto/itens claros */
   .site-header:not(.scrolled) .nav-desktop a,
@@ -270,7 +271,8 @@
 
   .nav-desktop { display: flex; align-items: center; gap: var(--space-8); }
   .nav-desktop a {
-    position: relative; font-weight: 500; font-size: var(--text-sm);
+    position: relative; font-weight: 500; font-size: var(--text-xs);
+    letter-spacing: 0.14em; text-transform: uppercase;
     color: var(--color-text); padding-block: var(--space-2);
   }
   .nav-desktop a::after {
@@ -316,7 +318,8 @@
     color: #fff; overflow: hidden;
   }
   .hero-bg { position: absolute; inset: 0; z-index: 0; }
-  .hero-bg img { width: 100%; height: 100%; object-fit: cover; }
+  /* imagem ampliada p/ permitir parallax sem mostrar bordas */
+  .hero-bg img { width: 100%; height: 120%; object-fit: cover; transform: translate3d(0,0,0) scale(1.06); will-change: transform; }
   /* scrim navy em camadas — legibilidade + profundidade premium */
   .hero-bg::after {
     content: ''; position: absolute; inset: 0;
@@ -631,11 +634,31 @@
   .mobile-panel .btn { margin-top: var(--space-8); }
 
   /* ==========================================================================
-     SCROLL TO TOP
+     BOTÕES FLUTUANTES — WhatsApp + voltar ao topo (empilhados no canto)
      ========================================================================== */
+  /* Bolinha do WhatsApp (sempre visível) */
+  .fab-whatsapp {
+    position: fixed; bottom: var(--space-8); right: var(--space-8); z-index: 950;
+    width: 60px; height: 60px; border-radius: var(--radius-full);
+    background: #25d366; color: #fff; box-shadow: 0 8px 24px rgba(37,211,102,0.45);
+    display: grid; place-items: center;
+    transition: transform var(--transition), box-shadow var(--transition);
+  }
+  .fab-whatsapp:hover { transform: scale(1.08); box-shadow: 0 12px 30px rgba(37,211,102,0.55); }
+  .fab-whatsapp::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit;
+    background: #25d366; z-index: -1; animation: fabPulse 2.4s ease-out infinite;
+  }
+  @keyframes fabPulse {
+    0% { transform: scale(1); opacity: 0.55; }
+    70%, 100% { transform: scale(1.7); opacity: 0; }
+  }
+  .fab-whatsapp svg { width: 32px; height: 32px; }
+
+  /* Voltar ao topo — empilhado acima da bolinha do WhatsApp */
   .to-top {
-    position: fixed; bottom: var(--space-8); right: var(--space-8); z-index: 900;
-    width: 48px; height: 48px; border-radius: var(--radius-full);
+    position: fixed; bottom: calc(var(--space-8) + 72px); right: var(--space-8); z-index: 940;
+    width: 46px; height: 46px; border-radius: var(--radius-full);
     background: var(--color-primary); color: #fff; box-shadow: var(--shadow-md);
     display: grid; place-items: center;
     opacity: 0; visibility: hidden; transform: translateY(12px);
@@ -643,6 +666,12 @@
   }
   .to-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
   .to-top:hover { background: var(--color-primary-hover); }
+  @media (max-width: 768px) {
+    .fab-whatsapp { width: 54px; height: 54px; bottom: var(--space-6); right: var(--space-6); }
+    .fab-whatsapp svg { width: 28px; height: 28px; }
+    .to-top { bottom: calc(var(--space-6) + 64px); right: var(--space-6); }
+  }
+  @media (prefers-reduced-motion: reduce) { .fab-whatsapp::before { animation: none; } }
 
   /* ==========================================================================
      SCROLL REVEAL
@@ -757,7 +786,7 @@
       <!-- HERO -->
       <section class="hero">
         <div class="hero-bg">
-          <img src="https://picsum.photos/seed/hotel-lobby/1920/1080" alt="Teles Plaza Hotel — hotel em Águas Lindas de Goiás, em frente à BR-070 e perto de Brasília" width="1920" height="1080" fetchpriority="high">
+          <img src="hero-fachada.jpg" alt="Fachada do Teles Plaza Hotel — hotel em Águas Lindas de Goiás, em frente à BR-070 e perto de Brasília" width="1254" height="1254" fetchpriority="high">
         </div>
         <div class="hero-content">
           <span class="hero-tag"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> Águas Lindas de Goiás, GO</span>
@@ -1342,6 +1371,11 @@
     </div>
   </footer>
 
+  <!-- Bolinha flutuante do WhatsApp -->
+  <a href="https://wa.me/5561999343604?text=Ol%C3%A1!%20Gostaria%20de%20informa%C3%A7%C3%B5es%20sobre%20o%20Teles%20Plaza%20Hotel." target="_blank" rel="noopener" class="fab-whatsapp" aria-label="Falar no WhatsApp">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.1-.2.3-.7 1-.9 1.1-.2.2-.3.2-.6.1-1.6-.8-2.6-1.4-3.7-3.2-.3-.5.3-.5.8-1.5.1-.2 0-.4 0-.5 0-.2-.7-1.7-1-2.3-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6 1.9.8 2.7.9 3.6.8.6-.1 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.2-.3-.2-.6-.4zM12 2a10 10 0 0 0-8.5 15.3L2 22l4.8-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg>
+  </a>
+
   <!-- Botão voltar ao topo -->
   <button class="to-top" id="toTop" aria-label="Voltar ao topo">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 15l-6-6-6 6"/></svg>
@@ -1517,6 +1551,23 @@
     toTop.addEventListener('click', function () {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
+
+    /* ---------- 8b. Parallax do hero (respeita reduced-motion) ---------- */
+    const heroImg = document.querySelector('.hero-bg img');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (heroImg && !reduceMotion) {
+      let ticking = false;
+      function updateParallax() {
+        const y = window.scrollY;
+        if (y < window.innerHeight) {
+          heroImg.style.transform = 'translate3d(0,' + (y * 0.35) + 'px,0) scale(1.06)';
+        }
+        ticking = false;
+      }
+      window.addEventListener('scroll', function () {
+        if (!ticking) { window.requestAnimationFrame(updateParallax); ticking = true; }
+      }, { passive: true });
+    }
 
     /* ---------- 9. Contador de estatísticas ---------- */
     function animateCount(el) {
