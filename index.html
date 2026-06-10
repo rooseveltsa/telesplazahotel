@@ -64,7 +64,7 @@
 
     /* Dourado — usado apenas em pequenos detalhes/realces */
     --color-accent:         #c79320;   /* dourado p/ ícones e detalhes sobre claro */
-    --color-accent-text:    #9a7113;   /* dourado legível em textos pequenos */
+    --color-accent-text:    #8a6410;   /* dourado legível em textos pequenos (WCAG AA 4.5:1) */
     --color-accent-bright:  #e6a91a;   /* dourado p/ realces sobre o azul */
     --color-accent-hover:   #b07f10;
     --color-accent-soft:    #f2e6c6;
@@ -545,10 +545,14 @@
   .map-placeholder img { width: 100%; height: 400px; object-fit: cover; filter: saturate(0.85); }
   .map-overlay { position: absolute; inset: 0; display: flex; align-items: flex-end; padding: var(--space-8); background: linear-gradient(to top, rgba(8,14,32,0.6), transparent 60%); }
   .map-pin {
+    display: inline-flex; align-items: center; gap: var(--space-2);
     background: var(--color-bg); color: var(--color-text); font-weight: 600; font-size: var(--text-sm);
     padding: var(--space-3) var(--space-5); border-radius: var(--radius-md);
     box-shadow: var(--shadow-md); border-left: 3px solid var(--color-accent-bright); max-width: 90%;
   }
+  .map-pin svg { flex-shrink: 0; }
+  /* Indicador de campo obrigatório */
+  .field label .req { color: var(--color-accent-text); margin-left: 2px; }
   .contact-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-6); margin-bottom: var(--space-16); }
   .contact-card {
     background: var(--color-surface); border: 1px solid var(--color-border);
@@ -756,7 +760,7 @@
           <img src="https://picsum.photos/seed/hotel-lobby/1920/1080" alt="Teles Plaza Hotel — hotel em Águas Lindas de Goiás, em frente à BR-070 e perto de Brasília" width="1920" height="1080" fetchpriority="high">
         </div>
         <div class="hero-content">
-          <span class="hero-tag">📍 Águas Lindas de Goiás, GO</span>
+          <span class="hero-tag"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> Águas Lindas de Goiás, GO</span>
           <h1>Teles Plaza Hotel</h1>
           <p class="hero-subtitle">E a sua casa fora de casa</p>
           <p class="lead">Conforto, acolhimento e praticidade em frente à BR-070, em Águas Lindas de Goiás — a poucos minutos de Brasília. Hospede-se com quem cuida de você como família.</p>
@@ -1211,7 +1215,7 @@
         <div class="map-placeholder reveal">
           <img src="https://picsum.photos/seed/map-aerial/1200/400" alt="Vista aérea da localização do Teles Plaza Hotel em Águas Lindas de Goiás" loading="lazy" width="1200" height="400">
           <div class="map-overlay">
-            <div class="map-pin">📍 Quadra 02, Lote nº 24 — Em frente à BR-070, Águas Lindas de Goiás - GO</div>
+            <div class="map-pin"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-text)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.3-7-11a7 7 0 0 1 14 0c0 4.7-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> Quadra 02, Lote nº 24 — Em frente à BR-070, Águas Lindas de Goiás - GO</div>
           </div>
         </div>
 
@@ -1255,7 +1259,7 @@
           <form id="reservaForm" novalidate>
             <div class="form-grid">
               <div class="field full">
-                <label for="nome">Nome completo</label>
+                <label for="nome">Nome completo <span class="req" aria-hidden="true">*</span></label>
                 <input type="text" id="nome" name="nome" placeholder="Seu nome" required autocomplete="name">
               </div>
               <div class="field">
@@ -1263,15 +1267,15 @@
                 <input type="email" id="email" name="email" placeholder="voce@email.com" autocomplete="email">
               </div>
               <div class="field">
-                <label for="telefone">Telefone/WhatsApp</label>
+                <label for="telefone">Telefone/WhatsApp <span class="req" aria-hidden="true">*</span></label>
                 <input type="tel" id="telefone" name="telefone" placeholder="(61) 90000-0000" required autocomplete="tel">
               </div>
               <div class="field">
-                <label for="checkin">Data de Check-in</label>
+                <label for="checkin">Data de Check-in <span class="req" aria-hidden="true">*</span></label>
                 <input type="date" id="checkin" name="checkin" required>
               </div>
               <div class="field">
-                <label for="checkout">Data de Check-out</label>
+                <label for="checkout">Data de Check-out <span class="req" aria-hidden="true">*</span></label>
                 <input type="date" id="checkout" name="checkout" required>
               </div>
               <div class="field full">
