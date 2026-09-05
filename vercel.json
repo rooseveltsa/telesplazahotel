@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    {
+      "source": "/sys",
+      "destination": "https://teles-gestao.espa-o-de-tr-7712.chatgpt.site",
+      "permanent": false
+    },
+    {
+      "source": "/sys/",
+      "destination": "https://teles-gestao.espa-o-de-tr-7712.chatgpt.site",
+      "permanent": false
+    }
+  ]
+}
