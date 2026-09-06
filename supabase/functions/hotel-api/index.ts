@@ -3,13 +3,13 @@ import {z} from 'npm:zod@3.25.76';
 import {sql,database} from './db.ts';
 import {handle as hotel} from './hotel.ts';
 import {handle as operations} from './operations.ts';
-import {today,validDay,nights,roomRate} from './hotel-domain.ts';
+import {validDay,nights,roomRate,validateBookingStart} from './hotel-domain.ts';
 const origins=new Set(['https://telesplazahotel.vercel.app','https://www.telesplazahotel.com.br','https://telesplazahotel.com.br']);
 const admin=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
 const digest=async(s:string)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))).map(x=>x.toString(16).padStart(2,'0')).join('');
 const clean=(v:unknown,max=200)=>z.string().trim().min(1).max(max).parse(v);
 const result=(data:unknown,status=200)=>Response.json(data,{status});
-function dates(b:any){if(!validDay(b.checkin)||!validDay(b.checkout)||b.checkin<today()||nights(b.checkin,b.checkout)<1||nights(b.checkin,b.checkout)>365)throw new Error('Confira as datas da estadia.');}
+function dates(b:any){if(!validDay(b.checkin)||!validDay(b.checkout)||nights(b.checkin,b.checkout)<1||nights(b.checkin,b.checkout)>365)throw new Error('Confira as datas da estadia.');validateBookingStart(b.checkin);}
 async function limit(req:Request,scope:string,max:number){const ip=req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()??'unknown';const key=await digest(scope+':'+ip);const rows=await sql`insert into request_limits(key,window_start,count) values(${key},now(),1) on conflict(key) do update set count=case when request_limits.window_start<now()-interval '10 minutes' then 1 else request_limits.count+1 end,window_start=case when request_limits.window_start<now()-interval '10 minutes' then now() else request_limits.window_start end returning count`;if(rows[0].count>max)throw new Error('Muitas tentativas. Aguarde alguns minutos.');}
 async function dispatch(req:Request){
  const url=new URL(req.url),route=url.pathname.split('/hotel-api')[1]||'/';
@@ -47,7 +47,7 @@ async function dispatch(req:Request){
   if(req.method==='POST'){const id=clean(payload.id),status=z.enum(['confirmed','cancelled']).parse(payload.status);
    await sql.begin(async tx=>{await tx`select pg_advisory_xact_lock(hashtextextended(${hid},0))`;const [r]=await tx`select * from booking_requests where id=${id} and hotel_id=${hid} and status='pending' for update`;if(!r)throw new Error('Solicitação já processada. Atualize os dados.');
     let reservation:string|null=null;
-    if(status==='confirmed'){const room=clean(payload.room);const [q]=await tx`select * from rooms where id=${room} and hotel_id=${hid} and state!='blocked' and capacity>=${r.guests}`;if(!q||r.checkin<today())throw new Error('Confira o quarto, a capacidade e as datas.');const conflicts=await tx`select 1 from reservations where room_id=${room} and hotel_id=${hid} and status in ('confirmed','checked_in') and checkin<${r.checkout} and checkout>${r.checkin}`;if(conflicts.length)throw new Error('Quarto ocupado no período. Escolha outro.');reservation=crypto.randomUUID();const rate=roomRate(q,r.guests),total=rate*nights(r.checkin,r.checkout);
+    if(status==='confirmed'){const room=clean(payload.room);const [q]=await tx`select * from rooms where id=${room} and hotel_id=${hid} and state!='blocked' and capacity>=${r.guests}`;validateBookingStart(r.checkin);if(!q)throw new Error('Confira o quarto, a capacidade e as datas.');const conflicts=await tx`select 1 from reservations where room_id=${room} and hotel_id=${hid} and status in ('confirmed','checked_in') and checkin<${r.checkout} and checkout>${r.checkin}`;if(conflicts.length)throw new Error('Quarto ocupado no período. Escolha outro.');reservation=crypto.randomUUID();const rate=roomRate(q,r.guests),total=rate*nights(r.checkin,r.checkout);
      await tx`insert into reservations(id,hotel_id,room_id,name,phone,company,guests,checkin,checkout,rate,total,status,source,notes,created) values(${reservation},${hid},${room},${r.name},${r.phone},'',${r.guests},${r.checkin},${r.checkout},${rate},${total},'confirmed','Site',${r.notes},${new Date().toISOString()})`;
     }
     await tx`update booking_requests set status=${status},reservation_id=${reservation} where id=${id}`;await tx`insert into audit(hotel_id,actor,action,entity,created) values(${hid},${user.email??user.id},${status==='confirmed'?'Solicitação do site confirmada':'Solicitação do site cancelada'},${id},${new Date().toISOString()})`;

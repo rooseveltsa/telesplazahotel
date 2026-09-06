@@ -1,3 +1,6 @@
+export const BOOKING_START = '2026-10-05';
+export function earliestBookingDate(day = today()) { return day < BOOKING_START ? BOOKING_START : day; }
+export function validateBookingStart(day: string) { if (day < BOOKING_START) throw new Error('Reservas disponíveis para entrada a partir de 05/10/2026.'); if (day < today()) throw new Error('A entrada não pode ser anterior a hoje.'); }
 export function today() { return new Intl.DateTimeFormat('sv-SE',{timeZone:'America/Sao_Paulo'}).format(new Date()); }
 export function addDays(day:string,n:number){return new Date(Date.parse(day+'T12:00:00Z')+n*86400000).toISOString().slice(0,10);}
 export function nights(start:string,end:string){return Math.round((Date.parse(end+'T12:00:00Z')-Date.parse(start+'T12:00:00Z'))/86400000);}
