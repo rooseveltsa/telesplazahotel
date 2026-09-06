@@ -1,19 +1,5 @@
-# Tooling / local
-.claude/
-.vercel/
-.DS_Store
-
-# Arquivos-fonte (não fazem parte do site publicado)
-Logo Teles.jpg
-logo-teles-light.png
-
-# HTML duplicado (o site servido é o index.html)
-teles-plaza-hotel.html
-.vercel
-
-# Fotos-fonte originais (a versão usada é a hero-fachada.jpg otimizada)
-PHOTO-*.jpg
-
-# Pasta de fotos-fonte (versões otimizadas vão pro deploy)
-fotos/
-van.jpg
+node_modules/
+sys/
+.env*
+*.tsbuildinfo
+public-dist/

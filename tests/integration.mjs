@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import {writeFileSync} from 'node:fs';
+const base='https://kukhsxcaqcywsvbkwhrm.supabase.co';
+const email='teles-validation-'+Date.now()+'@example.invalid',password=crypto.randomUUID()+crypto.randomUUID();
+let token='';
+async function call(path,payload,auth=true){const r=await fetch(base+'/functions/v1/hotel-api'+path,{method:payload?'POST':'GET',headers:{'Content-Type':'application/json',...(auth&&token?{Authorization:'Bearer '+token}:{})},body:payload?JSON.stringify(payload):undefined,signal:AbortSignal.timeout(25000)});const d=await r.json();return {status:r.status,data:d};}
+function ok(r){assert.equal(r.status,200,JSON.stringify(r.data));return r.data}
+assert.equal((await call('/hotel')).status,401);
+assert.equal((await call('/hotel',null,false)).status,401);
+ok(await call('/setup',{code:process.env.TEST_ACTIVATION,email,password},false));
+const login=await fetch(base+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:'sb_publishable_BoKnQ3jv5x-tB1mI16QHVw_vq7RiIkT','Content-Type':'application/json'},body:JSON.stringify({email,password}),signal:AbortSignal.timeout(20000)});const session=await login.json();assert.equal(login.status,200,JSON.stringify(session));token=session.access_token;
+writeFileSync('/tmp/teles-test-identity.json',JSON.stringify({id:session.user.id,email,token}),{mode:0o600});
+const state=ok(await call('/hotel'));const hotel=state.hotel.id,day=state.today,tomorrow=new Date(Date.parse(day+'T12:00:00Z')+86400000).toISOString().slice(0,10);
+const room=ok(await call('/hotel',{action:'room',hotel,number:'TESTE-101',category:'Duplo',capacity:2,rate:'240',floor:'1'})).id;
+let available=ok(await call('/availability?'+new URLSearchParams({checkin:day,checkout:tomorrow,guests:'2'}),null,false));assert.equal(available.categories[0].available,1);
+const id=crypto.randomUUID(),request={id,name:'TESTE INTEGRAÇÃO',phone:'61999990000',checkin:day,checkout:tomorrow,guests:2,category:'Duplo',notes:'Dado temporário de teste'};
+ok(await call('/request',request,false));ok(await call('/request',request,false));let requests=ok(await call('/requests?hotel='+hotel)).requests;assert.equal(requests.length,1);
+ok(await call('/requests',{hotel,id,status:'confirmed',room}));assert.equal((await call('/requests',{hotel,id,status:'confirmed',room})).status,400);
+available=ok(await call('/availability?'+new URLSearchParams({checkin:day,checkout:tomorrow,guests:'2'}),null,false));assert.equal(available.categories.length,0);
+const after=ok(await call('/hotel?hotel='+hotel));assert.equal(after.reservations.length,1);const reservation=after.reservations[0].id;
+ok(await call('/hotel',{action:'status',hotel,id:reservation,status:'checked_in'}));
+assert.equal((await call('/hotel',{action:'status',hotel,id:reservation,status:'checked_out'})).status,409);
+ok(await call('/operations',{action:'open_shift',hotel,id:'test-shift',opening:50}));
+ok(await call('/hotel',{action:'entry',hotel,id:'test-payment',reservation,kind:'payment',amount:240,description:'Teste',method:'Dinheiro',due:day}));
+ok(await call('/operations',{action:'close_shift',hotel,id:'test-shift',counted:290}));
+ok(await call('/hotel',{action:'status',hotel,id:reservation,status:'checked_out'}));
+ok(await call('/operations',{action:'supplier',hotel,id:'test-supplier',name:'Fornecedor teste'}));
+ok(await call('/operations',{action:'product',hotel,id:'test-product',name:'Café teste',unit:'kg',category:'Alimentação',minimum:1}));
+ok(await call('/operations',{action:'order',hotel,id:'test-order',supplier:'test-supplier',items:[{product:'test-product',quantity:2.5,rate:20}],due:day}));
+ok(await call('/operations',{action:'order_status',hotel,id:'test-order',status:'approved'}));
+const received=await Promise.all([call('/operations',{action:'order_status',hotel,id:'test-order',status:'received'}),call('/operations',{action:'order_status',hotel,id:'test-order',status:'received'})]);assert.deepEqual(received.map(r=>r.status).sort(),[200,409]);
+assert.equal((await call('/operations',{action:'stock',hotel,id:'test-negative',product:'test-product',kind:'out',quantity:3,reason:'Teste'})).status,409);
+ok(await call('/operations',{action:'proposal',hotel,id:'test-proposal',client:'Grupo teste',validUntil:tomorrow,items:[{description:'Triplo',unit:'quarto/diária',quantity:7,days:7,rate:290},{description:'Duplo',unit:'quarto/diária',quantity:1,days:7,rate:240},{description:'Refeições',unit:'pessoa/dia',quantity:23,days:7,rate:58},{description:'Van',unit:'veículo/diária',quantity:1,days:5,rate:1100}]}));
+const ops=ok(await call('/operations?hotel='+hotel));assert.equal(ops.products[0].quantity,2500);assert.equal(ops.proposals[0].total,3072800);assert.equal(Number(ops.shifts[0].expected),29000);
+assert.equal((await call('/operations?hotel=another-hotel')).status,403);
+assert.equal((await call('/hotel',{action:'room',hotel:'another-hotel',number:'1'})).status,403);
+console.log('PASS: login, solicitação pública idempotente, confirmação, disponibilidade, check-in/out, caixa, compras concorrentes, estoque, proposta e isolamento.');

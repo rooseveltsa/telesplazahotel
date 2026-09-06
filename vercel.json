@@ -1,14 +1,25 @@
 {
-  "redirects": [
+  "buildCommand": "npm run build",
+  "outputDirectory": "public-dist",
+  "rewrites": [
     {
       "source": "/sys",
-      "destination": "https://teles-gestao.espa-o-de-tr-7712.chatgpt.site",
-      "permanent": false
+      "destination": "/sys/index.html"
     },
     {
       "source": "/sys/",
-      "destination": "https://teles-gestao.espa-o-de-tr-7712.chatgpt.site",
-      "permanent": false
+      "destination": "/sys/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/sys/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     }
   ]
 }

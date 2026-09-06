@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /sys
 
 Sitemap: https://telesplazahotel.vercel.app/sitemap.xml
