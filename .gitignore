@@ -3,3 +3,4 @@ sys/
 .env*
 *.tsbuildinfo
 public-dist/
+supabase/.temp/

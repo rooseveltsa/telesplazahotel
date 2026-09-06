@@ -3,7 +3,7 @@ import {z} from 'npm:zod@3.25.76';
 import {sql,database} from './db.ts';
 import {handle as hotel} from './hotel.ts';
 import {handle as operations} from './operations.ts';
-import {today,validDay,nights} from './hotel-domain.ts';
+import {today,validDay,nights,roomRate} from './hotel-domain.ts';
 const origins=new Set(['https://telesplazahotel.vercel.app','https://www.telesplazahotel.com.br','https://telesplazahotel.com.br']);
 const admin=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
 const digest=async(s:string)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))).map(x=>x.toString(16).padStart(2,'0')).join('');
@@ -23,7 +23,7 @@ async function dispatch(req:Request){
   });return result({message:'Administrador ativado. Entre com seu e-mail e senha.'});}catch(e){if(newUser)await admin.auth.admin.deleteUser(newUser);throw e;}
  }
  if(route==='/availability'&&req.method==='GET'){
-  const b=Object.fromEntries(url.searchParams);dates(b);const guests=z.coerce.number().int().min(1).max(50).parse(b.guests);const rows=await sql`select r.category,min(r.rate)::integer as rate,count(*)::integer as available,max(r.capacity)::integer as capacity from rooms r join portal_config p on p.hotel_id=r.hotel_id where p.id=1 and r.capacity>=${guests} and r.state!='blocked' and not exists(select 1 from reservations b where b.room_id=r.id and b.hotel_id=r.hotel_id and b.status in ('confirmed','checked_in') and b.checkin<${b.checkout} and b.checkout>${b.checkin}) group by r.category order by r.category`;
+  const b=Object.fromEntries(url.searchParams);dates(b);const guests=z.coerce.number().int().min(1).max(50).parse(b.guests);const rows=await sql`select r.category,min(r.rate+greatest(0,${guests}-2)*r.extra_guest_rate)::integer as rate,count(*)::integer as available,max(r.capacity)::integer as capacity from rooms r join portal_config p on p.hotel_id=r.hotel_id where p.id=1 and r.capacity>=${guests} and r.state!='blocked' and not exists(select 1 from reservations b where b.room_id=r.id and b.hotel_id=r.hotel_id and b.status in ('confirmed','checked_in') and b.checkin<${b.checkout} and b.checkout>${b.checkin}) group by r.category order by r.category`;
   return result({categories:rows});
  }
  if(route==='/request'&&req.method==='POST'){
@@ -47,7 +47,7 @@ async function dispatch(req:Request){
   if(req.method==='POST'){const id=clean(payload.id),status=z.enum(['confirmed','cancelled']).parse(payload.status);
    await sql.begin(async tx=>{await tx`select pg_advisory_xact_lock(hashtextextended(${hid},0))`;const [r]=await tx`select * from booking_requests where id=${id} and hotel_id=${hid} and status='pending' for update`;if(!r)throw new Error('Solicitação já processada. Atualize os dados.');
     let reservation:string|null=null;
-    if(status==='confirmed'){const room=clean(payload.room);const [q]=await tx`select * from rooms where id=${room} and hotel_id=${hid} and state!='blocked' and capacity>=${r.guests}`;if(!q||r.checkin<today())throw new Error('Confira o quarto, a capacidade e as datas.');const conflicts=await tx`select 1 from reservations where room_id=${room} and hotel_id=${hid} and status in ('confirmed','checked_in') and checkin<${r.checkout} and checkout>${r.checkin}`;if(conflicts.length)throw new Error('Quarto ocupado no período. Escolha outro.');reservation=crypto.randomUUID();const rate=q.rate,total=rate*nights(r.checkin,r.checkout);
+    if(status==='confirmed'){const room=clean(payload.room);const [q]=await tx`select * from rooms where id=${room} and hotel_id=${hid} and state!='blocked' and capacity>=${r.guests}`;if(!q||r.checkin<today())throw new Error('Confira o quarto, a capacidade e as datas.');const conflicts=await tx`select 1 from reservations where room_id=${room} and hotel_id=${hid} and status in ('confirmed','checked_in') and checkin<${r.checkout} and checkout>${r.checkin}`;if(conflicts.length)throw new Error('Quarto ocupado no período. Escolha outro.');reservation=crypto.randomUUID();const rate=roomRate(q,r.guests),total=rate*nights(r.checkin,r.checkout);
      await tx`insert into reservations(id,hotel_id,room_id,name,phone,company,guests,checkin,checkout,rate,total,status,source,notes,created) values(${reservation},${hid},${room},${r.name},${r.phone},'',${r.guests},${r.checkin},${r.checkout},${rate},${total},'confirmed','Site',${r.notes},${new Date().toISOString()})`;
     }
     await tx`update booking_requests set status=${status},reservation_id=${reservation} where id=${id}`;await tx`insert into audit(hotel_id,actor,action,entity,created) values(${hid},${user.email??user.id},${status==='confirmed'?'Solicitação do site confirmada':'Solicitação do site cancelada'},${id},${new Date().toISOString()})`;

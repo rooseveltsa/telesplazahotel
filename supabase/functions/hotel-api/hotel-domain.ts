@@ -7,8 +7,10 @@ export function bookingTotal(start:string,end:string,rate:number){if(!validDay(s
 export function money(n:number){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(n/100);}
 export function shortDay(s:string){return s?s.slice(8,10)+'/'+s.slice(5,7):'—';}
 export type Hotel={id:string;name:string;demo:number};
-export type Room={id:string;hotel_id:string;number:string;category:string;capacity:number;rate:number;state:string;floor:string};
+export type Room={id:string;hotel_id:string;number:string;category:string;capacity:number;rate:number;state:string;floor:string;extra_guest_rate?:number};
 export type Reservation={id:string;hotel_id:string;room_id:string;name:string;phone:string;company:string;guests:number;checkin:string;checkout:string;rate:number;total:number;status:string;source:string;notes:string;created:string};
 export type Entry={id:string;hotel_id:string;reservation_id:string|null;kind:string;amount:number;description:string;method:string;due:string;paid:number;created:string};
 export type HotelData={hotels:Hotel[];hotel:Hotel|null;rooms:Room[];reservations:Reservation[];entries:Entry[];audit:{id:number;action:string;entity:string;created:string;actor:string}[];user:string;today:string};
 export function account(r:Reservation,es:Entry[]){let charges=r.total,paid=0;for(const e of es.filter(e=>e.reservation_id===r.id)){if(e.kind==='charge')charges+=e.amount;if(e.kind==='payment')paid+=e.amount;if(e.kind==='refund')paid-=e.amount;}return {charges,paid,balance:charges-paid};}
+
+export function roomRate(room:{rate:number;extra_guest_rate?:number},guests:number){return room.rate+Math.max(0,guests-2)*(room.extra_guest_rate??0);}
