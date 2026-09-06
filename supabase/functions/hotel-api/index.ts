@@ -14,12 +14,12 @@ async function limit(req:Request,scope:string,max:number){const ip=req.headers.g
 async function dispatch(req:Request){
  const url=new URL(req.url),route=url.pathname.split('/hotel-api')[1]||'/';
  if(req.method==='GET'&&route==='/health')return result({ok:true});
- if(req.method==='GET'&&route==='/setup'){const a=await sql`select 1 from activation where id=1 and used_at is null and expires_at>now()`;return result({available:a.length===1});}
+ if(req.method==='GET'&&route==='/setup'){const a=await sql`select 1 from operator_invites where used_at is null and expires_at>now() limit 1`;return result({available:a.length===1});}
  if(req.method==='POST'&&route==='/setup'){
-  await limit(req,'setup',10);const b=await req.json();const token=clean(b.code,100),email=z.string().email().max(200).parse(b.email),password=z.string().min(12).max(128).parse(b.password);const hash=await digest(token);let newUser:string|null=null;
-  try{await sql.begin(async tx=>{const a=await tx`select id from activation where id=1 and digest=${hash} and used_at is null and expires_at>now() for update`;if(!a.length)throw new Error('Código de ativação inválido ou expirado.');
+  await limit(req,'setup',10);const b=await req.json();const token=clean(b.code,100),email=z.string().trim().email().max(200).parse(b.email).toLowerCase(),password=z.string().min(12).max(128).parse(b.password);const hash=await digest(token);let newUser:string|null=null;
+  try{await sql.begin(async tx=>{await tx`select pg_advisory_xact_lock(hashtextextended('administrator-activation',0))`;const a=await tx`select email from operator_invites where email=${email} and digest=${hash} and used_at is null and expires_at>now() for update`;if(!a.length)throw new Error('Código de ativação inválido ou expirado.');
    const created=await admin.auth.admin.createUser({email,password,email_confirm:true});if(created.error||!created.data.user)throw new Error('Não foi possível criar a conta. Confira o e-mail ou use o login se já possui cadastro.');newUser=created.data.user.id;
-   const hid=crypto.randomUUID();await tx`insert into operators(user_id) values(${newUser})`;await tx`insert into hotels(id,owner,name,demo,created) values(${hid},${newUser},'Teles Plaza Hotel',0,${new Date().toISOString()})`;await tx`insert into portal_config(id,hotel_id) values(1,${hid})`;await tx`update activation set used_at=now() where id=1`;
+   const [existing]=await tx`select h.owner from portal_config p join hotels h on h.id=p.hotel_id where p.id=1`;const owner=existing?.owner??newUser;await tx`insert into operators(user_id,owner_id) values(${newUser},${owner})`;if(!existing){const hid=crypto.randomUUID();await tx`insert into hotels(id,owner,name,demo,created) values(${hid},${newUser},'Teles Plaza Hotel',0,${new Date().toISOString()})`;await tx`insert into portal_config(id,hotel_id) values(1,${hid})`;}await tx`update operator_invites set used_at=now() where email=${email}`;
   });return result({message:'Administrador ativado. Entre com seu e-mail e senha.'});}catch(e){if(newUser)await admin.auth.admin.deleteUser(newUser);throw e;}
  }
  if(route==='/availability'&&req.method==='GET'){
@@ -37,7 +37,7 @@ async function dispatch(req:Request){
  // All remaining routes require a verified Supabase access token and an operator record.
  const token=req.headers.get('authorization')?.replace(/^Bearer /i,'');if(!token)return result({error:'Entre com seu e-mail e senha.'},401);
  const {data,error}=await admin.auth.getUser(token);if(error||!data.user)return result({error:'Sua sessão expirou. Entre novamente.'},401);
- const user=data.user;if(!(await sql`select 1 from operators where user_id=${user.id}`).length)return result({error:'Conta sem acesso administrativo.'},403);
+ const [operator]=await sql`select owner_id from operators where user_id=${data.user.id}`;if(!operator)return result({error:'Conta sem acesso administrativo.'},403);const user={id:String(operator.owner_id),email:data.user.email};
  const payload=req.method==='POST'?await req.clone().json():null;const hid=String(payload?.hotel??url.searchParams.get('hotel')??'');
  if(route==='/hotel')return hotel(req,user,database(hid||user.id));
  if(route==='/operations')return operations(req,user,database(hid||user.id));

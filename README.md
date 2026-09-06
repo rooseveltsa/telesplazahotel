@@ -4,7 +4,7 @@ O site público e o painel `/sys` estão no mesmo projeto Vercel. O painel usa S
 
 ## Primeiro acesso
 
-Abrir `/sys`, selecionar “Primeiro acesso — ativar administrador” e informar o código exclusivo entregue ao proprietário, e-mail e senha de ao menos 12 caracteres. O código não faz parte do repositório: apenas seu hash fica no banco, com validade de sete dias e uso único. A ativação cria o administrador e a unidade Teles Plaza Hotel vazia. Cadastre quartos e tarifas reais em Configurações; nenhum inventário real foi presumido.
+Abrir `/sys`, selecionar “Primeiro acesso — ativar administrador” e informar o código exclusivo entregue ao proprietário, e-mail e senha de ao menos 12 caracteres. O código não faz parte do repositório: apenas seu hash por e-mail autorizado fica no banco, com validade de sete dias e uso único. As ativações são restritas a roosevelt.miranda@gmail.com e telesplazahotel@gmail.com. Ambos são administradores da mesma unidade. A primeira ativação cria a unidade Teles Plaza Hotel vazia; a segunda utiliza a mesma unidade. Cadastre quartos e tarifas reais em Configurações; nenhum inventário real foi presumido.
 
 ## Integração de reservas
 
@@ -27,7 +27,7 @@ As tabelas ficam no schema privado `teles`, com RLS habilitado e sem acesso dire
 
 ## Verificação
 
-A suíte `tests/integration.mjs` foi executada com conta e registros temporários, removidos após o teste. Ela exige uma ativação descartável e não deve ser executada no ambiente de produção já utilizado pelo hotel. Cobriu login, submissão idempotente, confirmação, disponibilidade, check-in/out, caixa, concorrência de compras, estoque negativo, cálculo de propostas e isolamento entre unidades. Tipagem e build também foram validados.
+A suíte `tests/integration.mjs` foi executada com conta e registros temporários, removidos após o teste. As suítes agora exigem TEST_SUPABASE_URL e TEST_SUPABASE_KEY de um projeto isolado e bloqueiam explicitamente o endereço de produção. O teste adicional de duas contas não foi executado em produção; os convites foram conferidos por leitura, sem criar administradores além dos autorizados. Cobriu login, submissão idempotente, confirmação, disponibilidade, check-in/out, caixa, concorrência de compras, estoque negativo, cálculo de propostas e isolamento entre unidades. Tipagem e build também foram validados.
 
 ## Continuidade
 

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {writeFileSync} from 'node:fs';
-const base='https://kukhsxcaqcywsvbkwhrm.supabase.co';
+const base=process.env.TEST_SUPABASE_URL;
+assert.ok(base && base!=='https://kukhsxcaqcywsvbkwhrm.supabase.co','Use um projeto Supabase isolado para testes; produção não é permitida.');
 const email='teles-validation-'+Date.now()+'@example.invalid',password=crypto.randomUUID()+crypto.randomUUID();
 let token='';
 async function call(path,payload,auth=true){const r=await fetch(base+'/functions/v1/hotel-api'+path,{method:payload?'POST':'GET',headers:{'Content-Type':'application/json',...(auth&&token?{Authorization:'Bearer '+token}:{})},body:payload?JSON.stringify(payload):undefined,signal:AbortSignal.timeout(25000)});const d=await r.json();return {status:r.status,data:d};}
@@ -8,7 +9,7 @@ function ok(r){assert.equal(r.status,200,JSON.stringify(r.data));return r.data}
 assert.equal((await call('/hotel')).status,401);
 assert.equal((await call('/hotel',null,false)).status,401);
 ok(await call('/setup',{code:process.env.TEST_ACTIVATION,email,password},false));
-const login=await fetch(base+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:'sb_publishable_BoKnQ3jv5x-tB1mI16QHVw_vq7RiIkT','Content-Type':'application/json'},body:JSON.stringify({email,password}),signal:AbortSignal.timeout(20000)});const session=await login.json();assert.equal(login.status,200,JSON.stringify(session));token=session.access_token;
+const login=await fetch(base+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:process.env.TEST_SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({email,password}),signal:AbortSignal.timeout(20000)});const session=await login.json();assert.equal(login.status,200,JSON.stringify(session));token=session.access_token;
 writeFileSync('/tmp/teles-test-identity.json',JSON.stringify({id:session.user.id,email,token}),{mode:0o600});
 const state=ok(await call('/hotel'));const hotel=state.hotel.id,day=state.today,tomorrow=new Date(Date.parse(day+'T12:00:00Z')+86400000).toISOString().slice(0,10);
 const room=ok(await call('/hotel',{action:'room',hotel,number:'TESTE-101',category:'Duplo',capacity:2,rate:'240',floor:'1'})).id;
