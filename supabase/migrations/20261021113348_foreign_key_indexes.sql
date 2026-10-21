@@ -1,0 +1,12 @@
+SET search_path TO teles, public;
+CREATE INDEX IF NOT EXISTS idx_booking_requests_reservation_id ON booking_requests(reservation_id);
+CREATE INDEX IF NOT EXISTS idx_booking_requests_room_id ON booking_requests(room_id);
+CREATE INDEX IF NOT EXISTS idx_daily_rates_plan_id ON daily_rates(plan_id);
+CREATE INDEX IF NOT EXISTS idx_guest_records_hotel_id ON guest_records(hotel_id);
+CREATE INDEX IF NOT EXISTS idx_operators_owner_id ON operators(owner_id);
+CREATE INDEX IF NOT EXISTS idx_portal_config_hotel_id ON portal_config(hotel_id);
+CREATE INDEX IF NOT EXISTS idx_purchase_orders_supplier_id ON purchase_orders(supplier_id);
+CREATE INDEX IF NOT EXISTS idx_room_moves_hotel_id ON room_moves(hotel_id);
+CREATE INDEX IF NOT EXISTS idx_room_moves_from_room ON room_moves(from_room);
+CREATE INDEX IF NOT EXISTS idx_room_moves_to_room ON room_moves(to_room);
+RESET search_path;;

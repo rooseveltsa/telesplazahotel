@@ -4,3 +4,22 @@ sys/
 *.tsbuildinfo
 public-dist/
 supabase/.temp/
+.claude/settings.local.json
+.vercel
+
+# Ruflo local secrets and runtime data
+.env
+.env.local
+.env.*.local
+.claude-flow/data/
+.claude-flow/logs/
+.claude-flow/sessions/
+
+# Ferramentas locais e documentos internos (não publicar)
+.claude/
+.claude-flow/
+.swarm/
+ruvector.db
+CLAUDE.md
+docs/
+.DS_Store

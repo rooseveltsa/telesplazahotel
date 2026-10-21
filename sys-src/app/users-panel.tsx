@@ -1,0 +1,28 @@
+import {useCallback,useEffect,useState,type FormEvent} from 'react';
+import {Plus,UserRound} from 'lucide-react';
+import {toast} from 'sonner';
+import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription} from '@/components/ui/dialog';
+import {Table,TableHeader,TableHead,TableRow,TableBody,TableCell} from '@/components/ui/table';
+import {apiFetch} from '@/lib/client';
+
+type Member={id:string;email:string;name:string;role:string;active:number;created:string};
+const roles:Record<string,string>={admin:'Administrador',reception:'Recepção'};
+
+// Cada plantonista entra com o próprio e-mail: o histórico registra quem fez cada lançamento.
+export default function UsersPanel({hotel}:{hotel:string}){
+ const [state,setState]=useState<{me:string;owner:string;role:string;users:Member[]}|null>(null),[error,setError]=useState(''),[modal,setModal]=useState<{type:'create'|'password';user?:Member}|null>(null),[busy,setBusy]=useState(false),[formError,setFormError]=useState('');
+ const refresh=useCallback(async()=>{try{const r=await apiFetch('/users?hotel='+encodeURIComponent(hotel));const d=await r.json();if(!r.ok)throw new Error(d.error);setState(d);setError('');}catch(e){setError((e as Error).message)}},[hotel]);
+ useEffect(()=>{void refresh();},[refresh]);
+ const post=async(payload:Record<string,unknown>)=>{setBusy(true);setFormError('');try{const r=await apiFetch('/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({hotel,...payload})});const d=await r.json();if(!r.ok)throw new Error(d.error);toast.success(d.message);setModal(null);await refresh();}catch(e){setFormError((e as Error).message);toast.error((e as Error).message)}finally{setBusy(false)}};
+ const submit=(e:FormEvent<HTMLFormElement>)=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.currentTarget));if(f.password!==f.confirm){setFormError('As senhas não conferem.');return;}void post(modal?.type==='create'?{action:'create',email:f.email,name:f.name,role:f.role,password:f.password}:{action:'password',user:modal?.user?.id,password:f.password});};
+ const admin=state?.role==='admin';
+ return <section className="panel"><div className="panel-heading"><div><h2>Usuários e acessos</h2><p>Um login por plantonista. O histórico de alterações mostra quem fez cada lançamento.</p></div>{admin&&<button className="primary" onClick={()=>{setFormError('');setModal({type:'create'})}}><Plus size={16}/>Novo usuário</button>}</div>
+ {error&&<p className="panel-padding form-error" role="alert">{error}</p>}
+ {state&&<Table><TableHeader><TableRow><TableHead>Usuário</TableHead><TableHead>Perfil</TableHead><TableHead>Situação</TableHead><TableHead>Ações</TableHead></TableRow></TableHeader><TableBody>{state.users.map(u=><TableRow key={u.id}><TableCell><div className="guest-cell"><span className="avatar"><UserRound size={15}/></span><div><strong>{u.name||u.email}{u.id===state.me?' (você)':''}</strong><small>{u.email}</small></div></div></TableCell><TableCell>{u.id===state.owner?'Proprietário':roles[u.role]??u.role}</TableCell><TableCell>{u.active?<span className="status clean"><span/>Ativo</span>:<span className="status blocked"><span/>Desativado</span>}</TableCell><TableCell>{admin?<div className="inline-actions"><button className="text-link" disabled={busy} onClick={()=>{setFormError('');setModal({type:'password',user:u})}}>Redefinir senha</button>{u.id!==state.me&&u.id!==state.owner&&<button className="text-link danger-text" disabled={busy} onClick={()=>void post({action:'set_active',user:u.id,active:u.active?0:1})}>{u.active?'Desativar':'Reativar'}</button>}</div>:'—'}</TableCell></TableRow>)}</TableBody></Table>}
+ {state&&!admin&&<p className="panel-padding muted">Somente administradores criam ou desativam acessos.</p>}
+ <Dialog open={!!modal} onOpenChange={v=>{if(!v&&!busy)setModal(null)}}><DialogContent className="form-modal"><DialogHeader><DialogTitle>{modal?.type==='create'?'Novo usuário':'Redefinir senha'}</DialogTitle><DialogDescription>{modal?.type==='create'?'Informe ao plantonista o e-mail e a senha criados aqui. Ele entra em /sys com esses dados.':`Nova senha para ${modal?.user?.email}.`}</DialogDescription></DialogHeader>
+ {formError&&<div className="form-error" role="alert">{formError}</div>}
+ <form onSubmit={submit}><div className="form-grid">{modal?.type==='create'&&<><label className="field"><span>Nome *</span><input name="name" required maxLength={80} placeholder="Ex.: Plantão noturno — Ana"/></label><label className="field"><span>E-mail *</span><input name="email" type="email" required maxLength={200} autoComplete="off"/></label><label className="field full-span"><span>Perfil *</span><select className="native-choice" name="role" defaultValue="reception"><option value="reception">Recepção — opera reservas, conta e caixa</option><option value="admin">Administrador — também gerencia usuários</option></select></label></>}
+ <label className="field"><span>Senha *</span><input name="password" type="password" required minLength={12} maxLength={128} autoComplete="new-password"/></label><label className="field"><span>Confirmar senha *</span><input name="confirm" type="password" required minLength={12} maxLength={128} autoComplete="new-password"/></label></div>
+ <p className="form-hint">Mínimo de 12 caracteres. Desativar um usuário bloqueia o acesso na hora e preserva o histórico.</p><div className="form-actions"><button type="button" className="secondary" disabled={busy} onClick={()=>setModal(null)}>Voltar</button><button className="primary" disabled={busy}>{busy?'Salvando…':'Salvar'}</button></div></form></DialogContent></Dialog></section>;
+}

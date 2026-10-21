@@ -35,4 +35,19 @@ ok(await call('/operations',{action:'proposal',hotel,id:'test-proposal',client:'
 const ops=ok(await call('/operations?hotel='+hotel));assert.equal(ops.products[0].quantity,2500);assert.equal(ops.proposals[0].total,3072800);assert.equal(Number(ops.shifts[0].expected),29000);
 assert.equal((await call('/operations?hotel=another-hotel')).status,403);
 assert.equal((await call('/hotel',{action:'room',hotel:'another-hotel',number:'1'})).status,403);
-console.log('PASS: login, solicitação pública idempotente, confirmação, disponibilidade, check-in/out, caixa, compras concorrentes, estoque, proposta e isolamento.');
+// Estadia paga no site: o quarto fica bloqueado enquanto o pagamento acontece.
+const config=ok(await call('/payment-config',null,false));
+if(config.enabled){
+ const held=crypto.randomUUID();
+ const checkout=ok(await call('/checkout',{id:held,name:'TESTE SINAL',phone:'61999990000',checkin:day,checkout:tomorrow,guests:2,category:'Duplo',notes:''},false));
+ assert.equal(checkout.total,24000,'o site cobra a estadia inteira');
+ assert.equal((await call('/checkout',{id:crypto.randomUUID(),name:'TESTE FILA',phone:'61999990000',checkin:day,checkout:tomorrow,guests:2,category:'Duplo',notes:''},false)).status,400,'quarto reservado não pode ser oferecido de novo');
+ assert.equal(ok(await call('/availability?'+new URLSearchParams({checkin:day,checkout:tomorrow,guests:'2'}),null,false)).categories.length,0,'quarto com pagamento em andamento sai da disponibilidade');
+ assert.equal(ok(await call('/payment-status?id='+held,null,false)).status,'awaiting_payment');
+ assert.equal((await call('/payments',{type:'payment',data:{id:'1'}},false)).status,401,'notificação sem assinatura válida é recusada');
+}else{
+ assert.equal((await call('/checkout',{id:crypto.randomUUID(),name:'TESTE SINAL',phone:'61999990000',checkin:day,checkout:tomorrow,guests:2,category:'Duplo',notes:''},false)).status,400);
+ console.log('AVISO: Mercado Pago não configurado neste ambiente; hold e pagamento não foram exercitados.');
+}
+assert.equal((await call('/checkout',{id:crypto.randomUUID(),name:'TESTE GRUPO',phone:'61999990000',checkin:day,checkout:tomorrow,guests:6,category:'Grupo',notes:''},false)).status,400,'grupo não paga on-line');
+console.log('PASS: login, solicitação pública idempotente, confirmação, disponibilidade, check-in/out, caixa, compras concorrentes, estoque, proposta, pagamento do site e isolamento.');

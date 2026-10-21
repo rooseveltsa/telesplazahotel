@@ -1,0 +1,8 @@
+project_id = "telesplazahotel"
+
+# O site público chama esta função sem sessão de usuário (disponibilidade, checkout,
+# e o webhook do Mercado Pago, que não envia apikey). A autorização é feita dentro
+# da própria função: as rotas administrativas exigem token de operador.
+# Sem isto, um deploy padrão liga verify_jwt e derruba as reservas do site.
+[functions.hotel-api]
+verify_jwt = false
