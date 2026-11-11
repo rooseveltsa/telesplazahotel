@@ -36,7 +36,7 @@ const MANUAL:Secao[]=[
     {o:'Trocar quarto',q:'Hóspede no hotel: informe o novo quarto e o dia da mudança. O mapa mostra o quarto anterior até a troca e o novo a partir dela; o extrato mostra o quarto de cada noite.'},
     {o:'Estadia passada',q:'Reservas de até 180 dias atrás podem ser lançadas. Quando a saída já passou e o check-in não foi feito, lance consumos e pagamentos e use Regularizar estadia.'},
     {o:'Grupo sem nomes',q:'Em Nova reserva, marque Reservar vários quartos de uma vez. Os quartos ficam bloqueados no nome do responsável; depois edite cada reserva com o hóspede real.'},
-    {o:'Consumo errado',q:'Use Estornar ao lado do consumo enquanto a conta estiver aberta. O histórico registra o estorno.'}]},
+    {o:'Consumo errado',q:'Use Excluir ao lado do consumo enquanto a conta estiver aberta. O lançamento sai do saldo e fica no histórico como excluído.'}]},
    {titulo:'Documentos',itens:[
     {o:'Voucher',q:'Comprovante para o hóspede com check-in, check-out, quarto, valor total, valor pago e saldo. Imprima ou salve em PDF para enviar pelo WhatsApp.'},
     {o:'Extrato',q:'Todas as diárias e consumos com data, pagamentos e saldo — o documento que as empresas pedem para conferir.'},

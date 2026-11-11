@@ -1,4 +1,12 @@
 .claude
+.env*
+docs
+.claude-flow
+.swarm
+ruvector.db
+agentdb.rvf*
+supabase/.temp
+*.tsbuildinfo
 Logo Teles.jpg
 logo-teles-light.png
 teles-plaza-hotel.html

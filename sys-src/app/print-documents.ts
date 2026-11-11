@@ -47,7 +47,7 @@ export function printVoucher(win:Window,c:StayContext){
 
 export function printStatement(win:Window,c:StayContext){
  const r=c.reservation,a=account(r,c.entries),list=nightsOf(c);
- const own=c.entries.filter(e=>e.reservation_id===r.id&&e.kind!=='expense');
+ const own=c.entries.filter(e=>e.reservation_id===r.id&&e.kind!=='expense'&&!e.voided_at);
  const rows=[...list.map(d=>({day:d.day,text:'Diária · quarto '+esc(c.rooms.find(q=>q.id===roomOn(r,d.day,c.moves))?.number??'—'),debit:d.rate,credit:0})),
   ...own.map(e=>({day:e.due,text:esc(e.description)+'<small>'+({charge:'Consumo',payment:'Pagamento · '+esc(e.method),refund:'Devolução · '+esc(e.method)} as Record<string,string>)[e.kind]+'</small>',debit:e.kind==='charge'?e.amount:e.kind==='refund'?e.amount:0,credit:e.kind==='payment'?e.amount:0}))]
   .sort((x,y)=>x.day.localeCompare(y.day));

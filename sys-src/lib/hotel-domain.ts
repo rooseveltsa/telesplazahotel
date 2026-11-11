@@ -15,10 +15,10 @@ export function shortDay(s:string){return s?s.slice(8,10)+'/'+s.slice(5,7):'—'
 export type Hotel={id:string;name:string;demo:number};
 export type Room={id:string;hotel_id:string;number:string;category:string;capacity:number;rate:number;state:string;floor:string;extra_guest_rate?:number};
 export type Reservation={id:string;hotel_id:string;room_id:string;name:string;phone:string;company:string;guests:number;checkin:string;checkout:string;rate:number;total:number;status:string;source:string;notes:string;created:string};
-export type Entry={id:string;hotel_id:string;reservation_id:string|null;kind:string;amount:number;description:string;method:string;due:string;paid:number;created:string;actor?:string;card_brand?:string;card_auth?:string;reconciled_at?:string|null;reconciled_by?:string|null;payment_id?:string|null};
+export type Entry={id:string;hotel_id:string;reservation_id:string|null;kind:string;amount:number;description:string;method:string;due:string;paid:number;created:string;actor?:string;card_brand?:string;card_auth?:string;reconciled_at?:string|null;reconciled_by?:string|null;payment_id?:string|null;voided_at?:string|null;voided_by?:string|null};
 export type RoomMove={id:string;reservation_id:string;from_room:string;to_room:string;day:string;created:string;actor:string};
 export type HotelData={hotels:Hotel[];hotel:Hotel|null;rooms:Room[];reservations:Reservation[];entries:Entry[];moves:RoomMove[];audit:{id:number;action:string;entity:string;created:string;actor:string}[];user:string;role?:string;today:string};
-export function account(r:Reservation,es:Entry[]){let charges=r.total,paid=0;for(const e of es.filter(e=>e.reservation_id===r.id)){if(e.kind==='charge')charges+=e.amount;if(e.kind==='payment')paid+=e.amount;if(e.kind==='refund')paid-=e.amount;}return {charges,paid,balance:charges-paid};}
+export function account(r:Reservation,es:Entry[]){let charges=r.total,paid=0;for(const e of es.filter(e=>e.reservation_id===r.id&&!e.voided_at)){if(e.kind==='charge')charges+=e.amount;if(e.kind==='payment')paid+=e.amount;if(e.kind==='refund')paid-=e.amount;}return {charges,paid,balance:charges-paid};}
 
 export function roomRate(room:{rate:number;extra_guest_rate?:number},guests:number){return room.rate+Math.max(0,guests-2)*(room.extra_guest_rate??0);}
 
