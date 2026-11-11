@@ -58,3 +58,12 @@ test('API de recepção permanece sintaticamente válida',()=>{
  const output=ts.transpileModule(readFileSync('supabase/functions/hotel-api/reception.ts','utf8'),{reportDiagnostics:true,compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}});
  assert.deepEqual(output.diagnostics?.filter(d=>d.category===ts.DiagnosticCategory.Error),[]);
 });
+test('edição de consumo: ação registrada, total recalculado e descrição sem prefixo duplicado',()=>{
+ const api=readFileSync('supabase/functions/hotel-api/reception.ts','utf8'),panel=readFileSync('sys-src/app/hotel-app.tsx','utf8');
+ assert.match(api,/receptionActions=new Set\([^)]*'charge_update'/);
+ const branch=api.slice(api.indexOf("action==='charge_update'"),api.indexOf("label=`Consumo alterado"));
+ assert.match(branch,/amount=unit\*quantity/);assert.match(branch,/voided_at is null/);assert.match(branch,/'confirmed','checked_in'/);
+ const strip=d=>d.replace(/^\d+× /,'');
+ assert.ok(panel.includes(".replace(/^\\d+× /,'')"));
+ assert.equal(strip('3× Água mineral'),'Água mineral');assert.equal(strip('1× 3× Água mineral'),'3× Água mineral');
+});
